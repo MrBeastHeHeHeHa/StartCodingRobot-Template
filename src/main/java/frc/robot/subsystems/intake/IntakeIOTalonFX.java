@@ -28,39 +28,18 @@ public class IntakeIOTalonFX implements IntakeIO {
     private final TalonFXConfiguration motorConfig;
     private final VoltageOut voltageRequest;
 
-    private final Slot0Configs config;
-
     private final StatusSignal<AngularVelocity> velocity;
     private final StatusSignal<Voltage> appliedVolts;
     private final StatusSignal<Current> current;
 
     public IntakeIOTalonFX() {
-        config = new Slot0Configs();
-        config.kV = IntakeConstants.GAINS.kV();
-        config.kA = IntakeConstants.GAINS.kA();
-        config.kP = IntakeConstants.GAINS.kP();
-        config.kI = IntakeConstants.GAINS.kI();
-        config.kD = IntakeConstants.GAINS.kD();
-
         motorConfig = new TalonFXConfiguration();
-
-        motorConfig.MotorOutput =
-            new MotorOutputConfigs()
-                .withNeutralMode(NeutralModeValue.Coast)
-                .withInverted(IntakeConstants.MOTOR_DIRECTION);
-        motorConfig.MotionMagic =
-            new MotionMagicConfigs()
-                .withMotionMagicAcceleration(
-                    Units.radiansToRotations(
-                        IntakeConstants.GAINS.accelerationmps() / IntakeConstants.WHEEL_RADIUS));
-        motorConfig.Feedback =
-            new FeedbackConfigs().withSensorToMechanismRatio(IntakeConstants.GEAR_RATIO);
 
         velocity = intakeMotor.getVelocity(false);
         appliedVolts = intakeMotor.getMotorVoltage(false);
         current = intakeMotor.getStatorCurrent(false);
 
-        intakeMotor.getConfigurator().apply(motorConfig);
+        setGains(IntakeConstants.GAINS);
 
         voltRequestMM = new MotionMagicVelocityVoltage(0);
         voltageRequest = new VoltageOut(0.0);
@@ -87,16 +66,21 @@ public class IntakeIOTalonFX implements IntakeIO {
 
     @Override
     public void setGains(Gains gains) {
-        config.kV = IntakeConstants.GAINS.kV();
-        config.kA = IntakeConstants.GAINS.kA();
-        config.kP = IntakeConstants.GAINS.kP();
-        config.kI = IntakeConstants.GAINS.kI();
-        config.kD = IntakeConstants.GAINS.kD();
+        final Slot0Configs config = new Slot0Configs();
+        config.kV = gains.kV();
+        config.kA = gains.kA();
+        config.kP = gains.kP();
+        config.kI = gains.kI();
+        config.kD = gains.kD();
+        motorConfig.MotorOutput =
+            new MotorOutputConfigs()
+                .withNeutralMode(NeutralModeValue.Coast)
+                .withInverted(IntakeConstants.MOTOR_DIRECTION);
         motorConfig.MotionMagic =
             new MotionMagicConfigs()
                 .withMotionMagicAcceleration(
                     Units.radiansToRotations(
-                        IntakeConstants.GAINS.accelerationmps() / IntakeConstants.WHEEL_RADIUS));
+                        gains.accelerationmps() / IntakeConstants.WHEEL_RADIUS));
         motorConfig.Feedback =
             new FeedbackConfigs().withSensorToMechanismRatio(IntakeConstants.GEAR_RATIO);
         motorConfig.Slot0 = config;

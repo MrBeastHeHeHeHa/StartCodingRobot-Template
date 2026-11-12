@@ -12,7 +12,7 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
-  private final IntakeIO io;;
+  private final IntakeIO io;
 
   public Intake(IntakeIO io) {
     this.io = io;
